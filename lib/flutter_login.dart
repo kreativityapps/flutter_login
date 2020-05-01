@@ -538,7 +538,7 @@ class _FlutterLoginState extends State<FlutterLogin>
     final deviceSize = MediaQuery.of(context).size;
     const headerMargin = 15;
     const cardInitialHeight = 300;
-    final cardTopPosition = 110.0;
+    final cardTopPosition = deviceSize.height / 2 - cardInitialHeight / 2;
     final headerHeight = cardTopPosition - headerMargin;
     final emailValidator =
         widget.emailValidator ?? FlutterLogin.defaultEmailValidator;
