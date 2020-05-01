@@ -27,6 +27,8 @@ class AuthCard extends StatefulWidget {
     this.emailValidator,
     this.passwordValidator,
     this.onSubmit,
+    this.onGuest,
+    this.onSwitchGuest,
     this.onSubmitCompleted,
   }) : super(key: key);
 
@@ -35,6 +37,8 @@ class AuthCard extends StatefulWidget {
   final FormFieldValidator<String> emailValidator;
   final FormFieldValidator<String> passwordValidator;
   final Function onSubmit;
+  final Function onGuest;
+  final Function onSwitchGuest;
   final Function onSubmitCompleted;
 
   @override
@@ -288,6 +292,7 @@ class AuthCardState extends State<AuthCard> with TickerProviderStateMixin {
                         : (_formLoadingController..value = 1.0),
                     emailValidator: widget.emailValidator,
                     passwordValidator: widget.passwordValidator,
+                    onSwitchGuest: widget.onSwitchGuest,
                     onSwitchRecoveryPassword: () => _switchRecovery(true),
                     onSubmitCompleted: () {
                       _forwardChangeRouteAnimation().then((_) {
@@ -332,6 +337,7 @@ class _LoginCard extends StatefulWidget {
     @required this.emailValidator,
     @required this.passwordValidator,
     @required this.onSwitchRecoveryPassword,
+    @required this.onSwitchGuest,
     this.onSwitchAuth,
     this.onSubmitCompleted,
   }) : super(key: key);
@@ -340,6 +346,7 @@ class _LoginCard extends StatefulWidget {
   final FormFieldValidator<String> emailValidator;
   final FormFieldValidator<String> passwordValidator;
   final Function onSwitchRecoveryPassword;
+  final Function onSwitchGuest;
   final Function onSwitchAuth;
   final Function onSubmitCompleted;
 
@@ -499,6 +506,38 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
     return true;
   }
 
+  Future<bool> _submitGuest() async {
+    // a hack to force unfocus the soft keyboard. If not, after change-route
+    // animation completes, it will trigger rebuilding this widget and show all
+    // textfields and buttons again before going to new route
+    FocusScope.of(context).requestFocus(FocusNode());
+
+    _submitController.forward();
+    setState(() => _isSubmitting = true);
+    final auth = Provider.of<Auth>(context, listen: false);
+    String error;
+
+    // workaround to run after _cardSizeAnimation in parent finished
+    // need a cleaner way but currently it works so..
+    Future.delayed(const Duration(milliseconds: 270), () {
+      setState(() => _showShadow = false);
+    });
+
+    _submitController.reverse();
+
+    if (!DartHelper.isNullOrEmpty(error)) {
+      showErrorToast(context, error);
+      Future.delayed(const Duration(milliseconds: 271), () {
+        setState(() => _showShadow = true);
+      });
+      setState(() => _isSubmitting = false);
+      return false;
+    }
+
+    widget?.onSubmitCompleted();
+    return true;
+  }
+
   Widget _buildNameField(double width, LoginMessages messages, Auth auth) {
     return AnimatedTextFormField(
       controller: _nameController,
@@ -581,6 +620,18 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
           _formKey.currentState.save();
           widget.onSwitchRecoveryPassword();
         } : null,
+      ),
+    );
+  }
+
+  Widget _buildGuest(ThemeData theme, LoginMessages messages) {
+    return ScaleTransition(
+      scale: _buttonScaleAnimation,
+      child: AnimatedButton(
+        controller: _submitController,
+        text: 'Continue as guest',
+        color: Colors.grey[600],
+        onPressed: _submitGuest,
       ),
     );
   }
@@ -671,6 +722,7 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
                 _buildForgotPassword(theme, messages),
                 _buildSubmitButton(theme, messages, auth),
                 _buildSwitchAuthButton(theme, messages, auth),
+                _buildGuest(theme, messages),
               ],
             ),
           ),

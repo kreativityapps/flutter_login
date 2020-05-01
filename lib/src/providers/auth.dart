@@ -15,6 +15,7 @@ class Auth with ChangeNotifier {
     this.onLogin,
     this.onSignup,
     this.onRecoverPassword,
+    this.onGuest,
     String email = '',
     String password = '',
     String confirmPassword = '',
@@ -25,6 +26,7 @@ class Auth with ChangeNotifier {
   final AuthCallback onLogin;
   final AuthCallback onSignup;
   final RecoverCallback onRecoverPassword;
+  final AuthCallback onGuest;
 
   AuthMode _mode = AuthMode.Login;
 

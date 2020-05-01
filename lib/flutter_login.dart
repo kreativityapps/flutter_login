@@ -215,6 +215,7 @@ class FlutterLogin extends StatefulWidget {
     this.emailValidator,
     this.passwordValidator,
     this.onSubmitAnimationCompleted,
+    this.onGuest,
     this.logoTag,
     this.titleTag,
     this.showDebugButtons = false,
@@ -254,6 +255,9 @@ class FlutterLogin extends StatefulWidget {
   /// Called after the submit animation's completed. Put your route transition
   /// logic here. Recommend to use with [logoTag] and [titleTag]
   final Function onSubmitAnimationCompleted;
+
+  /// Called when the user hit the guest button when in login mode
+  final Function onGuest;
 
   /// Hero tag for logo image. If not specified, it will simply fade out when
   /// changing route
@@ -534,7 +538,7 @@ class _FlutterLoginState extends State<FlutterLogin>
     final deviceSize = MediaQuery.of(context).size;
     const headerMargin = 15;
     const cardInitialHeight = 300;
-    final cardTopPosition = deviceSize.height / 2 - cardInitialHeight / 2;
+    final cardTopPosition = 110.0;
     final headerHeight = cardTopPosition - headerMargin;
     final emailValidator =
         widget.emailValidator ?? FlutterLogin.defaultEmailValidator;
@@ -580,6 +584,7 @@ class _FlutterLoginState extends State<FlutterLogin>
                         emailValidator: emailValidator,
                         passwordValidator: passwordValidator,
                         onSubmit: _reverseHeaderAnimation,
+                        onGuest: widget.onGuest,
                         onSubmitCompleted: widget.onSubmitAnimationCompleted,
                       ),
                     ),
