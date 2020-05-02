@@ -540,6 +540,7 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
 
   Widget _buildNameField(double width, LoginMessages messages, Auth auth) {
     return AnimatedTextFormField(
+      key: Key('email'),
       controller: _nameController,
       width: width,
       loadingController: _loadingController,
@@ -558,6 +559,7 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
 
   Widget _buildPasswordField(double width, LoginMessages messages, Auth auth) {
     return AnimatedPasswordTextFormField(
+      key: Key('password'),
       animatedWidth: width,
       loadingController: _loadingController,
       interval: _passTextFieldLoadingAnimationInterval,
@@ -625,13 +627,20 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
   }
 
   Widget _buildGuest(ThemeData theme, LoginMessages messages) {
-    return ScaleTransition(
-      scale: _buttonScaleAnimation,
-      child: AnimatedButton(
-        controller: _submitController,
-        text: 'Continue as guest',
-        color: Colors.grey[600],
-        onPressed: _submitGuest,
+    return FadeIn(
+      controller: _loadingController,
+      fadeDirection: FadeDirection.bottomToTop,
+      offset: .5,
+      curve: _textButtonLoadingAnimationInterval,
+      child: FlatButton(
+        child: Text(
+          messages.guestButton,
+          style: theme.textTheme.body1,
+          textAlign: TextAlign.left,
+        ),
+        onPressed: buttonEnabled ? () {
+          _submitGuest();
+        } : null,
       ),
     );
   }
@@ -640,6 +649,7 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
     return ScaleTransition(
       scale: _buttonScaleAnimation,
       child: AnimatedButton(
+        key: Key('buttonLogin'),
         controller: _submitController,
         text: auth.isLogin ? messages.loginButton : messages.signupButton,
         onPressed: _submit,
@@ -720,9 +730,12 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
             child: Column(
               children: <Widget>[
                 _buildForgotPassword(theme, messages),
+                SizedBox(height: 5),
                 _buildSubmitButton(theme, messages, auth),
+                SizedBox(height: 15),
                 _buildSwitchAuthButton(theme, messages, auth),
                 _buildGuest(theme, messages),
+                SizedBox(height: 10),
               ],
             ),
           ),
