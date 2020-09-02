@@ -292,7 +292,11 @@ class AuthCardState extends State<AuthCard> with TickerProviderStateMixin {
                         : (_formLoadingController..value = 1.0),
                     emailValidator: widget.emailValidator,
                     passwordValidator: widget.passwordValidator,
-                    onSwitchGuest: widget.onSwitchGuest,
+                    onGuest: () {
+                      _forwardChangeRouteAnimation().then((_) {
+                        widget?.onGuest();
+                      });
+                    },
                     onSwitchRecoveryPassword: () => _switchRecovery(true),
                     onSubmitCompleted: () {
                       _forwardChangeRouteAnimation().then((_) {
@@ -338,6 +342,7 @@ class _LoginCard extends StatefulWidget {
     @required this.passwordValidator,
     @required this.onSwitchRecoveryPassword,
     @required this.onSwitchGuest,
+    @required this.onGuest,
     this.onSwitchAuth,
     this.onSubmitCompleted,
   }) : super(key: key);
@@ -347,6 +352,7 @@ class _LoginCard extends StatefulWidget {
   final FormFieldValidator<String> passwordValidator;
   final Function onSwitchRecoveryPassword;
   final Function onSwitchGuest;
+  final Function onGuest;
   final Function onSwitchAuth;
   final Function onSubmitCompleted;
 
@@ -514,7 +520,6 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
 
     _submitController.forward();
     setState(() => _isSubmitting = true);
-    final auth = Provider.of<Auth>(context, listen: false);
     String error;
 
     // workaround to run after _cardSizeAnimation in parent finished
@@ -534,7 +539,7 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
       return false;
     }
 
-    widget?.onSubmitCompleted();
+    widget?.onGuest();
     return true;
   }
 

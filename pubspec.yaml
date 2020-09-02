@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   font_awesome_flutter: ^8.5.0
-  provider: ^4.0.2
+  provider: ^4.3.2+1
   transformer_page_view: ^0.1.6
   flushbar: ^1.9.1
   # flutter_test from sdk depends on quiver 2.0.5
@@ -29,8 +29,8 @@ dev_dependencies:
 flutter:
 
   # To add assets to your package, add an assets section, like this:
-  assets:
-    - assets/images/ecorp.png
+#  assets:
+#    - assets/images/ecorp.png
   #  - assets/images/placeholder-logo.png
   #
   # For details regarding assets in packages, see

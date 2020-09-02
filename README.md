@@ -191,7 +191,7 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return FlutterLogin(
       title: 'ECORP',
-      logo: 'assets/images/ecorp.png',
+      // logo: 'assets/images/ecorp.png',
       onLogin: (_) => Future(null),
       onSignup: (_) => Future(null),
       onSubmitAnimationCompleted: () {
