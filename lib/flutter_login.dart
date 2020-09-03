@@ -216,6 +216,8 @@ class FlutterLogin extends StatefulWidget {
     this.passwordValidator,
     this.onSubmitAnimationCompleted,
     this.onGuest,
+    this.onGoogle,
+    this.onFacebook,
     this.logoTag,
     this.titleTag,
     this.showDebugButtons = false,
@@ -258,6 +260,10 @@ class FlutterLogin extends StatefulWidget {
 
   /// Called when the user hit the guest button when in login mode
   final Function onGuest;
+
+  final Function onGoogle;
+
+  final Function onFacebook;
 
   /// Hero tag for logo image. If not specified, it will simply fade out when
   /// changing route
@@ -536,8 +542,8 @@ class _FlutterLoginState extends State<FlutterLogin>
     final loginTheme = widget.theme ?? LoginTheme();
     final theme = _mergeTheme(theme: Theme.of(context), loginTheme: loginTheme);
     final deviceSize = MediaQuery.of(context).size;
-    const headerMargin = 15;
-    const cardInitialHeight = 350;
+    const headerMargin = 10;
+    const cardInitialHeight = 450;
     final cardTopPosition = deviceSize.height / 2 - cardInitialHeight / 2;
     final headerHeight = cardTopPosition - headerMargin;
     final emailValidator =
@@ -585,6 +591,8 @@ class _FlutterLoginState extends State<FlutterLogin>
                         passwordValidator: passwordValidator,
                         onSubmit: _reverseHeaderAnimation,
                         onGuest: widget.onGuest,
+                        onGoogle: widget.onGoogle,
+                        onFacebook: widget.onFacebook,
                         onSubmitCompleted: widget.onSubmitAnimationCompleted,
                       ),
                     ),

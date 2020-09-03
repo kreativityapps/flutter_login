@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:transformer_page_view/transformer_page_view.dart';
+import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
 import '../constants.dart';
 import 'animated_button.dart';
 import 'animated_text.dart';
@@ -28,6 +29,8 @@ class AuthCard extends StatefulWidget {
     this.passwordValidator,
     this.onSubmit,
     this.onGuest,
+    this.onGoogle,
+    this.onFacebook,
     this.onSwitchGuest,
     this.onSubmitCompleted,
   }) : super(key: key);
@@ -38,6 +41,8 @@ class AuthCard extends StatefulWidget {
   final FormFieldValidator<String> passwordValidator;
   final Function onSubmit;
   final Function onGuest;
+  final Function onGoogle;
+  final Function onFacebook;
   final Function onSwitchGuest;
   final Function onSubmitCompleted;
 
@@ -297,6 +302,16 @@ class AuthCardState extends State<AuthCard> with TickerProviderStateMixin {
                         widget?.onGuest();
                       });
                     },
+                    onGoogle: () {
+                      _forwardChangeRouteAnimation().then((_) {
+                        widget?.onGoogle();
+                      });
+                    },
+                    onFacebook: () {
+                      _forwardChangeRouteAnimation().then((_) {
+                        widget?.onFacebook();
+                      });
+                    },
                     onSwitchRecoveryPassword: () => _switchRecovery(true),
                     onSubmitCompleted: () {
                       _forwardChangeRouteAnimation().then((_) {
@@ -343,6 +358,8 @@ class _LoginCard extends StatefulWidget {
     @required this.onSwitchRecoveryPassword,
     @required this.onSwitchGuest,
     @required this.onGuest,
+    @required this.onGoogle,
+    @required this.onFacebook,
     this.onSwitchAuth,
     this.onSubmitCompleted,
   }) : super(key: key);
@@ -353,6 +370,8 @@ class _LoginCard extends StatefulWidget {
   final Function onSwitchRecoveryPassword;
   final Function onSwitchGuest;
   final Function onGuest;
+  final Function onGoogle;
+  final Function onFacebook;
   final Function onSwitchAuth;
   final Function onSubmitCompleted;
 
@@ -543,6 +562,68 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
     return true;
   }
 
+  Future<bool> _submitGoogle() async {
+    // a hack to force unfocus the soft keyboard. If not, after change-route
+    // animation completes, it will trigger rebuilding this widget and show all
+    // textfields and buttons again before going to new route
+    FocusScope.of(context).requestFocus(FocusNode());
+
+    _submitController.forward();
+    setState(() => _isSubmitting = true);
+    String error;
+
+    // workaround to run after _cardSizeAnimation in parent finished
+    // need a cleaner way but currently it works so..
+    Future.delayed(const Duration(milliseconds: 270), () {
+      setState(() => _showShadow = false);
+    });
+
+    _submitController.reverse();
+
+    if (!DartHelper.isNullOrEmpty(error)) {
+      showErrorToast(context, error);
+      Future.delayed(const Duration(milliseconds: 271), () {
+        setState(() => _showShadow = true);
+      });
+      setState(() => _isSubmitting = false);
+      return false;
+    }
+
+    widget?.onGoogle();
+    return true;
+  }
+
+  Future<bool> _submitFacebook() async {
+    // a hack to force unfocus the soft keyboard. If not, after change-route
+    // animation completes, it will trigger rebuilding this widget and show all
+    // textfields and buttons again before going to new route
+    FocusScope.of(context).requestFocus(FocusNode());
+
+    _submitController.forward();
+    setState(() => _isSubmitting = true);
+    String error;
+
+    // workaround to run after _cardSizeAnimation in parent finished
+    // need a cleaner way but currently it works so..
+    Future.delayed(const Duration(milliseconds: 270), () {
+      setState(() => _showShadow = false);
+    });
+
+    _submitController.reverse();
+
+    if (!DartHelper.isNullOrEmpty(error)) {
+      showErrorToast(context, error);
+      Future.delayed(const Duration(milliseconds: 271), () {
+        setState(() => _showShadow = true);
+      });
+      setState(() => _isSubmitting = false);
+      return false;
+    }
+
+    widget?.onFacebook();
+    return true;
+  }
+
   Widget _buildNameField(double width, LoginMessages messages, Auth auth) {
     return AnimatedTextFormField(
       key: Key('email'),
@@ -637,14 +718,50 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
       fadeDirection: FadeDirection.bottomToTop,
       offset: .5,
       curve: _textButtonLoadingAnimationInterval,
-      child: FlatButton(
+      child: OutlineButton(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18.0),
+        ),
         child: Text(
           messages.guestButton,
-          style: theme.textTheme.body1,
+          style: theme.textTheme.bodyText1,
           textAlign: TextAlign.left,
         ),
         onPressed: buttonEnabled ? () {
           _submitGuest();
+        } : null,
+      ),
+    );
+  }
+
+  Widget _buildGoogle() {
+    return FadeIn(
+      controller: _loadingController,
+      fadeDirection: FadeDirection.bottomToTop,
+      offset: .5,
+      curve: _textButtonLoadingAnimationInterval,
+      child: GoogleSignInButton(
+        text: ' Google   ',
+        borderRadius: 18,
+        onPressed: buttonEnabled ? () {
+          _submitGoogle();
+        } : null,
+        darkMode: true, // default: false
+      ),
+    );
+  }
+
+  Widget _buildFacebook() {
+    return FadeIn(
+      controller: _loadingController,
+      fadeDirection: FadeDirection.bottomToTop,
+      offset: .5,
+      curve: _textButtonLoadingAnimationInterval,
+      child: FacebookSignInButton(
+        text: 'Facebook',
+        borderRadius: 18,
+        onPressed: buttonEnabled ? () {
+          _submitFacebook();
         } : null,
       ),
     );
@@ -668,7 +785,7 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
       offset: .5,
       curve: _textButtonLoadingAnimationInterval,
       fadeDirection: FadeDirection.topToBottom,
-      child: FlatButton(
+      child: OutlineButton(
         child: AnimatedText(
           text: auth.isSignup ? messages.loginButton : messages.signupButton,
           textRotation: AnimatedTextRotation.down,
@@ -676,8 +793,12 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
         disabledTextColor: theme.primaryColor,
         onPressed: buttonEnabled ? _switchAuthMode : null,
         padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 4),
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        // materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         textColor: theme.primaryColor,
+        // textColor: Colors.white,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18.0),
+        ),
       ),
     );
   }
@@ -689,7 +810,7 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
     final messages = Provider.of<LoginMessages>(context, listen: false);
     final theme = Theme.of(context);
     final deviceSize = MediaQuery.of(context).size;
-    final cardWidth = min(deviceSize.width * 0.75, 360.0);
+    final cardWidth = min(deviceSize.width * 0.9, 360.0);
     const cardPadding = 16.0;
     final textFieldWidth = cardWidth - cardPadding * 2;
     final authForm = Form(
@@ -739,6 +860,20 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
                 _buildSubmitButton(theme, messages, auth),
                 SizedBox(height: 15),
                 _buildSwitchAuthButton(theme, messages, auth),
+                Container(
+                  height: 1,
+                  color: Colors.grey[300],
+                  margin: EdgeInsets.all(10),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildFacebook(),
+                    SizedBox(width: 10),
+                    _buildGoogle(),
+                  ],
+                ),
+                SizedBox(height: 10),
                 _buildGuest(theme, messages),
                 SizedBox(height: 10),
               ],
